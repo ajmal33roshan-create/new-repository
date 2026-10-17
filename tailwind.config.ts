@@ -47,6 +47,9 @@ const config: Config = {
         'fade-in': 'fadeIn 0.6s ease-out forwards',
         'slide-up': 'slideUp 0.6s ease-out forwards',
         'float': 'float 3s ease-in-out infinite',
+        'float-slow': 'float 6s ease-in-out infinite',
+        'shimmer': 'shimmerSweep 1.1s ease-out',
+        'glow': 'goldGlow 3s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -60,6 +63,14 @@ const config: Config = {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-10px)' },
+        },
+        shimmerSweep: {
+          '0%': { transform: 'translateX(-120%) skewX(-12deg)' },
+          '100%': { transform: 'translateX(220%) skewX(-12deg)' },
+        },
+        goldGlow: {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(198, 163, 106, 0)' },
+          '50%': { boxShadow: '0 0 24px 4px rgba(198, 163, 106, 0.25)' },
         },
       },
       boxShadow: {

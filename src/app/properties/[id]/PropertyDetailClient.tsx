@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,7 @@ import {
   Heart, Share2, MapPin, Bed, Bath, Maximize, Home as HomeIcon, Check,
   Phone, Mail, Calendar, Send, ChevronRight, Sofa, Clock,
 } from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import PropertyCard, { type PropertyCardData } from '@/components/PropertyCard';
 import { cn, formatPriceFull, formatDate } from '@/lib/utils';
 import { PROPERTY_TYPES, LISTING_TYPES, FURNISHED_OPTIONS } from '@/lib/constants';
@@ -67,6 +68,14 @@ export default function PropertyDetailClient({
   const [activeTab, setActiveTab] = useState<'contact' | 'viewing'>('contact');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState('');
+
+  // Parallax on the main gallery image
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: galleryRef,
+    offset: ['start end', 'end start'],
+  });
+  const galleryY = useTransform(scrollYProgress, [0, 1], ['-6%', '6%']);
 
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', message: '' });
   const [viewingForm, setViewingForm] = useState({ name: '', email: '', phone: '', preferredDate: '', message: '' });
@@ -158,27 +167,42 @@ export default function PropertyDetailClient({
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Left: Gallery + Details */}
           <div className="lg:col-span-2">
-            {/* Gallery */}
-            <div className="overflow-hidden rounded-2xl">
+            {/* Gallery — cinematic crossfade + parallax */}
+            <div ref={galleryRef} className="overflow-hidden rounded-2xl">
               <div className="relative aspect-[16/10]">
-                <Image
-                  src={property.images[selectedImg] || property.mainImage}
-                  alt={property.title}
-                  fill
-                  priority
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 66vw"
-                />
-                <span className={cn('absolute left-4 top-4 rounded-full px-4 py-1.5 text-sm font-semibold', badge.class)}>
+                <AnimatePresence mode="sync">
+                  <motion.div
+                    key={selectedImg}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="absolute inset-0"
+                  >
+                    <motion.div style={{ y: galleryY }} className="absolute inset-[-8%]">
+                      <Image
+                        src={property.images[selectedImg] || property.mainImage}
+                        alt={property.title}
+                        fill
+                        priority
+                        className="object-cover"
+                        sizes="(max-width: 1024px) 100vw, 66vw"
+                      />
+                    </motion.div>
+                  </motion.div>
+                </AnimatePresence>
+                {/* Cinematic gradient */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy/30 via-transparent to-transparent" />
+                <span className={cn('absolute left-4 top-4 rounded-full px-4 py-1.5 text-sm font-semibold shadow-sm', badge.class)}>
                   {badge.label}
                 </span>
                 <div className="absolute right-4 top-4 flex gap-2">
-                  <button onClick={toggleFav} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition-all hover:scale-110">
+                  <motion.button onClick={toggleFav} whileTap={{ scale: 0.85 }} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition-all hover:scale-110">
                     <Heart className={cn('h-5 w-5', fav ? 'fill-red-500 text-red-500' : 'text-navy')} />
-                  </button>
-                  <button onClick={handleShare} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition-all hover:scale-110">
+                  </motion.button>
+                  <motion.button onClick={handleShare} whileTap={{ scale: 0.85 }} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition-all hover:scale-110">
                     <Share2 className="h-5 w-5 text-navy" />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
               {property.images.length > 1 && (
@@ -188,11 +212,14 @@ export default function PropertyDetailClient({
                       key={i}
                       onClick={() => setSelectedImg(i)}
                       className={cn(
-                        'relative h-20 w-28 shrink-0 overflow-hidden rounded-xl border-2 transition-all',
+                        'group/thumb relative h-20 w-28 shrink-0 overflow-hidden rounded-xl border-2 transition-all',
                         selectedImg === i ? 'border-gold' : 'border-transparent opacity-70 hover:opacity-100'
                       )}
                     >
-                      <Image src={img} alt={`Image ${i + 1}`} fill className="object-cover" sizes="112px" />
+                      <Image src={img} alt={`Image ${i + 1}`} fill className="object-cover transition-transform duration-300 group-hover/thumb:scale-110" sizes="112px" />
+                      {selectedImg === i && (
+                        <motion.div layoutId="thumb-active" className="absolute inset-0 ring-2 ring-gold rounded-xl" />
+                      )}
                     </button>
                   ))}
                 </div>

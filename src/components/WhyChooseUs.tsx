@@ -1,6 +1,6 @@
-import Image from 'next/image';
 import { Users, Home, MapPin, Heart } from 'lucide-react';
 import Reveal from './Reveal';
+import ParallaxImage from './ParallaxImage';
 
 const stats = [
   { label: 'Happy Clients', value: '12K+', icon: Users },
@@ -14,17 +14,19 @@ export default function WhyChooseUs() {
     <section className="py-16 lg:py-20">
       <div className="container-x">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          {/* Left image */}
+          {/* Left image — parallax depth */}
           <Reveal>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-card-hover">
-              <Image
+            <div className="group relative aspect-[4/3] overflow-hidden rounded-3xl shadow-card-hover">
+              <ParallaxImage
                 src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80"
                 alt="Bright modern living room interior"
-                fill
-                className="object-cover"
+                className="h-full w-full"
                 sizes="(max-width: 1024px) 100vw, 50vw"
+                offset={40}
               />
-              <div className="absolute bottom-4 left-4 rounded-2xl bg-white/95 px-5 py-3 shadow-lg backdrop-blur">
+              {/* Cinematic overlay */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy/30 via-transparent to-transparent" />
+              <div className="absolute bottom-4 left-4 rounded-2xl glass-panel px-5 py-3 shadow-lg">
                 <p className="text-sm font-semibold text-navy">More Than Just a Home</p>
               </div>
             </div>
@@ -45,8 +47,8 @@ export default function WhyChooseUs() {
             <div className="mt-8 grid grid-cols-2 gap-4">
               {stats.map((s, i) => (
                 <Reveal key={s.label} delay={i * 0.1}>
-                  <div className="rounded-2xl border border-navy/5 bg-beige/50 p-5 text-center">
-                    <s.icon className="mx-auto h-6 w-6 text-gold" strokeWidth={1.5} />
+                  <div className="group rounded-2xl border border-navy/5 bg-beige/50 p-5 text-center transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+                    <s.icon className="mx-auto h-6 w-6 text-gold transition-transform duration-300 group-hover:scale-110" strokeWidth={1.5} />
                     <p className="mt-2 text-2xl font-bold text-navy">{s.value}</p>
                     <p className="text-xs text-secondary">{s.label}</p>
                   </div>
