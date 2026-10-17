@@ -7,7 +7,9 @@ import { Search, MapPin, Home as HomeIcon, DollarSign, BedDouble, ArrowRight, Sp
 import { useState, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { PROPERTY_TYPES, LISTING_TYPES, CITIES } from '@/lib/constants';
-import TiltCard from './TiltCard';
+
+const HERO_IMAGE =
+  'https://images.unsplash.com/photo-1781795414968-8ece31826420?auto=format&fit=crop&w=1920&q=80';
 
 export default function HeroSection() {
   const router = useRouter();
@@ -21,13 +23,13 @@ export default function HeroSection() {
   });
 
   // Subtle parallax on the hero image as the page scrolls
-  const imgRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
-    target: imgRef,
+    target: sectionRef,
     offset: ['start start', 'end start'],
   });
-  const imgY = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
-  const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.35, 0.65]);
+  const imgY = useTransform(scrollYProgress, [0, 1], ['0%', '15%']);
+  const imgScale = useTransform(scrollYProgress, [0, 1], [1.05, 1.15]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,26 +50,30 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-beige">
-      {/* Ambient floating gold orbs for depth */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-20 top-10 h-64 w-64 rounded-full bg-gold/10 blur-3xl animate-float-slow" />
-        <div className="absolute right-10 top-40 h-48 w-48 rounded-full bg-navy/5 blur-3xl animate-float" />
-        <div className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-gold/5 blur-3xl animate-float-slow" />
-      </div>
+    <section ref={sectionRef} className="relative overflow-hidden bg-navy">
+      {/* Full-bleed cinematic background image */}
+      <motion.div style={{ y: imgY, scale: imgScale }} className="absolute inset-[-10%]">
+        <Image
+          src={HERO_IMAGE}
+          alt="Ultra-luxury contemporary glass mansion with infinity pool at golden hour"
+          fill
+          priority
+          className="object-cover object-center lg:object-[70%_center]"
+          sizes="100vw"
+        />
+      </motion.div>
 
-      {/* Subtle decorative grid lines */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{
-        backgroundImage: 'linear-gradient(#142B49 1px, transparent 1px), linear-gradient(90deg, #142B49 1px, transparent 1px)',
-        backgroundSize: '64px 64px',
-      }} />
+      {/* Cinematic gradient overlay — dark on left for text, fading to transparent on right */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/60 to-transparent" />
+      {/* Bottom fade for search panel separation */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-navy/80 to-transparent" />
 
-      <div className="container-x relative z-10 pt-12 pb-8 lg:pt-20 lg:pb-12">
+      <div className="container-x relative z-10 pt-12 pb-8 lg:pt-24 lg:pb-16">
         <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
           {/* Left content — staggered cinematic entrance */}
           <div className="order-2 lg:order-1">
             <motion.div custom={0} variants={fadeUp} initial="hidden" animate="show">
-              <span className="inline-flex items-center gap-2 rounded-full bg-gold/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-gold">
+              <span className="inline-flex items-center gap-2 rounded-full bg-gold/15 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-gold backdrop-blur-sm">
                 <Sparkles className="h-3.5 w-3.5" />
                 Premium Properties. Better Living.
               </span>
@@ -78,7 +84,7 @@ export default function HeroSection() {
               variants={fadeUp}
               initial="hidden"
               animate="show"
-              className="mt-4 text-4xl font-bold leading-tight text-navy sm:text-5xl lg:text-6xl"
+              className="mt-4 text-4xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl"
             >
               Find Your Dream Home
               <span className="mt-1 block font-script text-4xl font-normal text-gold sm:text-5xl lg:text-6xl">
@@ -100,7 +106,7 @@ export default function HeroSection() {
               variants={fadeUp}
               initial="hidden"
               animate="show"
-              className="mt-5 max-w-md text-base leading-relaxed text-secondary"
+              className="mt-5 max-w-md text-base leading-relaxed text-white/80 drop-shadow"
             >
               Discover exceptional homes, prime locations, and lifestyle-driven communities — all in one place.
             </motion.p>
@@ -112,53 +118,32 @@ export default function HeroSection() {
               animate="show"
               className="mt-7 flex flex-wrap gap-3"
             >
-              <Link href="/properties" className="btn-primary group">
+              <Link href="/properties" className="btn-gold group">
                 Explore Properties
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
-              <Link href="/list-property" className="btn-outline">
+              <Link
+                href="/list-property"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:border-white hover:bg-white/10 active:scale-95"
+              >
                 List Your Property
               </Link>
             </motion.div>
           </div>
 
-          {/* Right image — 3D tilt + parallax + cinematic overlay */}
+          {/* Right side — floating glass badge over the image */}
           <div className="order-1 lg:order-2">
-            <TiltCard max={6} scale={1.01} className="group">
-              <div
-                ref={imgRef}
-                className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-card-hover lg:aspect-[5/4]"
-              >
-                <motion.div style={{ y: imgY }} className="absolute inset-[-10%]">
-                  <Image
-                    src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1200&q=80"
-                    alt="Modern luxury glass villa at dusk with pool"
-                    fill
-                    priority
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                </motion.div>
-                {/* Cinematic gradient overlay */}
-                <motion.div
-                  style={{ opacity: overlayOpacity }}
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy/60 via-navy/10 to-transparent"
-                />
-                {/* Floating glass info badge */}
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8, duration: 0.6 }}
-                  className="absolute bottom-4 left-4 rounded-2xl glass-panel px-4 py-3 shadow-lg"
-                  style={{ transform: 'translateZ(40px)' }}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gold">Featured Estate</p>
-                  <p className="text-sm font-bold text-navy">Signature Collection</p>
-                </motion.div>
-                {/* Shimmer sweep on hover */}
-                <div className="shimmer-sweep pointer-events-none absolute inset-0" />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
+              className="lg:absolute lg:bottom-12 lg:right-8"
+            >
+              <div className="rounded-2xl glass-panel px-5 py-4 shadow-lg">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gold">Featured Estate</p>
+                <p className="text-sm font-bold text-navy">Signature Collection</p>
               </div>
-            </TiltCard>
+            </motion.div>
           </div>
         </div>
 
