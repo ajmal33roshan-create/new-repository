@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("USER") // USER | AGENT | ADMIN
+  phone     String?
+  image     String?
+  bio       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  properties Property[]
+  favorites  Favorite[]
+  inquiries  Inquiry[]
+}
+
+model Property {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  price        Float
+  currency     String   @default("USD")
+  listingType  String   // SALE | RENT | COMMERCIAL
+  propertyType String   // VILLA | APARTMENT | HOUSE | PENTHOUSE | COMMERCIAL | LAND
+  country      String   @default("United States")
+  city         String
+  neighborhood String?
+  address      String
+  bedrooms     Int?
+  bathrooms    Int?
+  area         Float
+  areaUnit     String   @default("sqft")
+  furnished    String?  // FURNISHED | SEMI_FURNISHED | UNFURNISHED
+  amenities    String   // JSON array
+  images       String   // JSON array of URLs
+  mainImage    String
+  agentId      String?
+  agent        User?    @relation(fields: [agentId], references: [id])
+  status       String   @default("PENDING") // PENDING | APPROVED | REJECTED | ARCHIVED
+  featured     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  favorites       Favorite[]
+  inquiries       Inquiry[]
+  viewingRequests ViewingRequest[]
+
+  @@index([listingType])
+  @@index([propertyType])
+  @@index([city])
+  @@index([status])
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+}
+
+model Inquiry {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  phone      String?
+  message    String
+  propertyId String?
+  agentId    String?
+  property   Property? @relation(fields: [propertyId], references: [id])
+  agent      User?     @relation(fields: [agentId], references: [id])
+  status     String   @default("NEW") // NEW | READ | RESPONDED | CLOSED
+  createdAt  DateTime @default(now())
+}
+
+model ViewingRequest {
+  id            String   @id @default(cuid())
+  name          String
+  email         String
+  phone         String?
+  preferredDate String?
+  message       String?
+  propertyId    String
+  property      Property @relation(fields: [propertyId], references: [id])
+  status        String   @default("PENDING") // PENDING | CONFIRMED | COMPLETED | CANCELLED
+  createdAt     DateTime @default(now())
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  message   String
+  property  String?
+  image     String?
+  rating    Int      @default(5)
+  createdAt DateTime @default(now())
+}

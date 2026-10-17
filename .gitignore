@@ -147,3 +147,9 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Everlight Homes
+prisma/*.db
+prisma/*.db-journal
+public/uploads/
+!.env.base44-defaults
